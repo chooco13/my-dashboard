@@ -13,6 +13,7 @@ export default defineConfig({
       srcDir: "./src",
       mode: "development",
       strategies: "injectManifest",
+      registerType: "autoUpdate",
       filename: "prompt-sw.ts",
       scope: "/",
       base: "/",

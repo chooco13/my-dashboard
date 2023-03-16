@@ -3,10 +3,10 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"prepare": "npm run smui-theme",
+		"prepare": "pnpm run smui-theme",
 		"smui-theme": "smui-theme compile static/smui.css -i src/theme -i ./node_modules",
-		"dev": "npm run prepare && vite dev",
-		"build": "vite build",
+		"dev": "pnpm run prepare && vite dev",
+		"build": "pnpm run prepare && svelte-kit sync && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
