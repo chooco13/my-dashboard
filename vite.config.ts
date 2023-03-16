@@ -45,23 +45,19 @@ export default defineConfig({
       },
       injectManifest: {
         globPatterns: ["client/**/*.{js,css,ico,png,svg,webp,woff,woff2}"],
-      },
-      devOptions: {
-        enabled: true,
-        type: "module",
-        navigateFallback: "/",
-      },
-      // if you have shared info in svelte config file put in a separate module and use it also here
-      kit: {},
-      workbox: {
         manifestTransforms: [
           async (entries) => {
-            const fallbackURL = "prerendered/fallback.html";
+            entries.push({
+              url: "/index.html",
+              revision: null,
+              size: 0,
+            });
 
             // the fallback will be always in .svelte-kit/output/prerendered/fallback.html
-            const manifest = entries.filter(({ url }) => !(url === fallbackURL))
+            const manifest = entries
               .map((e) => {
                 let url = e.url;
+                console.log(url);
 
                 if (url.startsWith("client/")) {
                   url = url.slice(7);
@@ -101,6 +97,17 @@ export default defineConfig({
             return { manifest };
           },
         ],
+      },
+      devOptions: {
+        enabled: true,
+        type: "module",
+        navigateFallback: "/",
+      },
+      // if you have shared info in svelte config file put in a separate module and use it also here
+      kit: {},
+      workbox: {
+        mode: "development",
+        navigateFallback: null,
       },
     }),
   ],
