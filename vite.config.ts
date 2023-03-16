@@ -55,36 +55,49 @@ export default defineConfig({
       kit: {},
       workbox: {
         manifestTransforms: [
-          async (manifestEntries) => {
-            const scope = "/";
+          async (entries) => {
+            const fallbackURL = "prerendered/fallback.html";
 
-            console.info("Precache Manifest Entries:");
-            const manifest = manifestEntries
-              .filter(
-                ({ url }) =>
-                  // Remove paths that should not be cached:
-                  url !== "client/vite-manifest.json" &&
-                  url !== "prerendered/fallback.html",
-                // && url !== 'client/manifest.webmanifest' && !url.endsWith('sw.js') && !url.startsWith('workbox-')
-              )
+            // the fallback will be always in .svelte-kit/output/prerendered/fallback.html
+            const manifest = entries.filter(({ url }) => !(url === fallbackURL))
               .map((e) => {
-                // Adjust paths to match what the adapter server understands:
-                const url1 = e.url;
                 let url = e.url;
-                if (url.startsWith("/")) url = url.slice(1);
-                if (url.startsWith("client/")) url = url.slice(7);
-                if (url.startsWith("prerendered/pages/")) url = url.slice(18);
 
-                // router paths
-                if (url && url.endsWith(".html")) {
-                  url = url === "index.html"
-                    ? ""
-                    : `${url.substring(0, url.lastIndexOf("."))}`;
+                if (url.startsWith("client/")) {
+                  url = url.slice(7);
+                } else if (url.startsWith("prerendered/pages/")) {
+                  url = url.slice(18);
                 }
-                e.url = scope + url; // Canonical URL starts with base
-                console.info(`  ${url1.padEnd(100)} => ${JSON.stringify(e)}`);
+
+                if (url.endsWith(".html")) {
+                  if (url.startsWith("/")) {
+                    url = url.slice(1);
+                  }
+
+                  if (url === "index.html") {
+                    url = "/";
+                  } else {
+                    const idx = url.lastIndexOf("/");
+                    if (idx > -1) {
+                      // abc/index.html -> abc/?
+                      if (url.endsWith("/index.html")) {
+                        url = `${url.slice(0, idx)}`;
+                      } // abc/def.html -> abc/def/?
+                      else {
+                        url = `${url.substring(0, url.lastIndexOf("."))}`;
+                      }
+                    } else {
+                      // xxx.html -> xxx/?
+                      url = `${url.substring(0, url.lastIndexOf("."))}`;
+                    }
+                  }
+                }
+
+                e.url = url;
+
                 return e;
               });
+
             return { manifest };
           },
         ],
